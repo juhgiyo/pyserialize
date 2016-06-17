@@ -1,2 +1,2 @@
 # pyserialize
-Simple Python serializer
+Python simple serializer
