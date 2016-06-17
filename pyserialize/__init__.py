@@ -2,9 +2,9 @@
 '''
 @file Serializer.py
 @author Woong Gyu La a.k.a Chris. <juhgiyo@gmail.com>
-        <http://github.com/juhgiyo/pyserver>
+        <http://github.com/juhgiyo/pyserialize>
 @date March 10, 2016
-@brief Packet Builder Interface
+@brief Serializer Interface
 @version 0.1
 
 @section LICENSE
