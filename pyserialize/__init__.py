@@ -50,6 +50,7 @@ format
     str: s
 
     list: a
+    set: t
     dict: m
     tuple: u
     class: o (class must be a subclass of Packable class)
@@ -109,6 +110,9 @@ class Serializer(object):
             elif type(item) == tuple:
                 fmt += 'u'
                 data += Serializer.pack(*item)
+            elif type(item) == set:
+                fmt += 't'
+                data += Serializer.pack(*list(item))
             elif type(item) == dict:
                 fmt += 'm'
                 dictList = []
@@ -128,8 +132,16 @@ class Serializer(object):
 
     @staticmethod
     def unpack(data):
+        restList=[]
         (retTuple, usedSize) = Serializer._unpack(data)
-        return retTuple
+        restList=list(retTuple)
+        while usedSize>0:
+            try:
+                (retTuple, usedSize) = Serializer._unpack(data)
+                retList = restList + list(retTuple)
+            except Exception as e:
+                pass
+        return tuple(retList)
 
     @staticmethod
     def _unpack(data):
@@ -174,6 +186,11 @@ class Serializer(object):
                 (retTuple, size) = Serializer._unpack(data)
                 usedSize += size
                 retList.append(retTuple)
+
+            elif fmt[i] == 't':
+                (retTuple, size) = Serializer._unpack(data)
+                usedSize += size
+                retList.append(set(retTuple))
 
             elif fmt[i] == 'm':
                 (retTuple, size) = Serializer._unpack(data)
