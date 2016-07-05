@@ -38,20 +38,28 @@ from pyserialize import *
 a=0
 b='Hello World'
 c=0.05
+
 serializedData=Serializer.pack(a,b,c)
 
 d=[10,20,30]
+
 serializedData2=Serializer.pack(a,b,c,d)
+
 e=(10.0,30.5)
+
 serializedData2=serializedData2+Serializer.pack(e)
+
 
 # Deserializing
 
 unserializedData=Serializer.unpack(serializedData)
+
 print unserializedData[0] # 0
 print unserializedData[1] # 'Hellow World'
 print unserializedData[2] # 0.05
+
 unserializedData2=Serializer.unpack(serializedData2)
+
 print unserializedData2[0] # 0
 print unserializedData2[1] # 'Hellow World'
 print unserializedData2[2] # 0.05
@@ -119,9 +127,12 @@ a=0
 b='Hello World'
 c=0.05
 d= Vector3D(5.0,10.0,2.0)
+
 serializedData=Serializer.pack(a,b,c,d)
 
+
 unserializedData=Serializer.unpack(serializedData)
+
 print unserializedData[0] # 0
 print unserializedData[1] # 'Hellow World'
 print unserializedData[2] # 0.05
