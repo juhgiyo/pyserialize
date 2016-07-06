@@ -75,7 +75,6 @@ For class type, the class must be a subclass of Packable and must implement belo
 ```
 def pack(self):
 def unpack(self, data):
-
 ```
 
 Also the class's constructor must not require any explicit arguments:
@@ -93,8 +92,6 @@ class TempClass(Packable):
     # This is also fine since all arguments have default values
     def __init__(self,a=0,b=3,c='Hello'):
         ...
-
-
 ```
 
 Sample class declaration for pyserialize:
@@ -129,7 +126,6 @@ class Vector3D(Packable):
     # Optinal
     def __str__(self):
         return "Vector3D:x=%s,y=%s,z=%s" % (self.x, self.y, self.z)
-
 ...
 
 # Now the class can be used as any other supported type for pyserilize
