@@ -28,7 +28,7 @@ None, bool, integer, float, string, list, tuple, set, dict, class(subclass of Pa
 For all type except class type, you can simply pack:
 
 
-```
+```python
 from pyserialize import *
 
 ...
@@ -72,14 +72,14 @@ print unserializedData2[5] # None
 For class type, the class must be a subclass of Packable and must implement below two functions:
 
 
-```
+```python
 def pack(self):
 def unpack(self, data):
 ```
 
 Also the class's constructor must not require any explicit arguments:
 
-```
+```python
 from pyserialize import *
 
 class TempClass(Packable):
@@ -97,7 +97,7 @@ class TempClass(Packable):
 Sample class declaration for pyserialize:
 
 
-```
+```python
 class Vector3D(Packable):
     def __init__(self, x=0.0, y=0.0, z=0.0):
         self.x = lat
