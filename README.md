@@ -46,8 +46,9 @@ d=[10,20,30]
 serializedData2=Serializer.pack(a,b,c,d)
 
 e=(10.0,30.5)
+f=None
 
-serializedData2=serializedData2+Serializer.pack(e)
+serializedData2=serializedData2+Serializer.pack(e, f)
 
 
 # Deserializing
@@ -65,6 +66,7 @@ print unserializedData2[1] # 'Hellow World'
 print unserializedData2[2] # 0.05
 print unserializedData2[3] # [10,20,30]
 print unserializedData2[4] # (10.0,30.5)
+print unserializedData2[5] # None
 ```
 
 For class type, the class must be a subclass of Packable and must implement below two functions:
@@ -113,7 +115,15 @@ class Vector3D(Packable):
     # and the function also must return tuple of self and size returned from "Serialize._unpack"
     # to operate correctly
     def unpack(self, data):
-        ((self.x, self.y, self.z), size) = Serializer._unpack(data)
+        (retTuple , size) = = Serializer._unpack(data)
+        count = len(retTuple) # number of entities in the tuple
+        self.x = retTuple[0]
+        self.y = retTuple[1]
+        self.z = retTuple[2]
+
+        # Simple can be done by single line as below :
+        # ((self.x, self.y, self.z), size) = Serializer._unpack(data)
+        
         return (self, size)
 
     # Optinal
