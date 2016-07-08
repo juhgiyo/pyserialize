@@ -132,13 +132,13 @@ class Serializer(object):
 
     @staticmethod
     def unpack(data):
-        restList=[]
+        retList=[]
         (retTuple, usedSize) = Serializer._unpack(data)
-        restList=list(retTuple)
+        retList=list(retTuple)
         while usedSize>0:
             try:
                 (retTuple, usedSize) = Serializer._unpack(data)
-                retList = restList + list(retTuple)
+                retList = retList + list(retTuple)
             except Exception as e:
                 pass
         return tuple(retList)
