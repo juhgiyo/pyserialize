@@ -1,5 +1,5 @@
 #!/usr/bin/python
-'''
+"""
 @file Serializer.py
 @author Woong Gyu La a.k.a Chris. <juhgiyo@gmail.com>
         <http://github.com/juhgiyo/pyserialize>
@@ -34,12 +34,11 @@ THE SOFTWARE.
 @section DESCRIPTION
 
 Definitions for Serializer Class.
-'''
+"""
 
-import sys
-from struct import *
-import inspect
 import importlib
+import inspect
+from struct import *
 
 '''
 format
@@ -60,15 +59,16 @@ NOT SUPPORTED:
 '''
 
 
-def str_to_class(moduleName, className):
-    m = importlib.import_module(moduleName)
-    c = getattr(m, className)
+def str_to_class(module_name, class_name):
+    m = importlib.import_module(module_name)
+    c = getattr(m, class_name)
+    return c
 
 
 class Packable(object):
-    '''
+    """
     this function must return the packed data of the class
-    '''
+    """
 
     def pack(self):
         raise NotImplementedError()
@@ -90,7 +90,7 @@ class Serializer(object):
         data = ''
         fmt = pack('= I', len(arg))
         for item in arg:
-            if item == None:
+            if item is None:
                 fmt += 'n'
             elif type(item) == bool:
                 data += pack('= ?', item)
@@ -115,10 +115,10 @@ class Serializer(object):
                 data += Serializer.pack(*list(item))
             elif type(item) == dict:
                 fmt += 'm'
-                dictList = []
+                dict_list = []
                 for key, value in item.iteritems():
-                    dictList.append(key)
-                    dictList.append(value)
+                    dict_list.append(key)
+                    dict_list.append(value)
                 data += Serializer.pack(*item)
             elif issubclass(type(item), Packable):
                 fmt += 'o'
@@ -132,153 +132,156 @@ class Serializer(object):
 
     @staticmethod
     def unpack(data):
-        retList=[]
-        origSize = len(data)
+        # ret_list = []
+        orig_size = len(data)
 
-        (retTuple, usedSize) = Serializer._unpack(data)
-        retList=list(retTuple)
-        leftSize = origSize - usedSize
-        while leftSize>0:
+        (ret_tuple, used_size) = Serializer._unpack(data)
+        ret_list = list(ret_tuple)
+        left_size = orig_size - used_size
+        should_break = False
+        while left_size > 0:
             try:
 
-                (retTuple, usedSize) = Serializer._unpack(data)
+                (ret_tuple, used_size) = Serializer._unpack(data)
 
-                retList = retList + list(retTuple)
-                leftSize = leftSize - usedSize
+                ret_list = ret_list + list(ret_tuple)
+                left_size = left_size - used_size
 
-            except Exception as e:
+            except Exception:
+                should_break = True
+            if should_break:
                 break
-        return tuple(retList)
+        return tuple(ret_list)
 
     @staticmethod
     def _unpack(data):
-        usedSize = 0
-        (formatLen,), data = unpack('= I', data[:4]), data[4:]
-        usedSize += 4
-        fmt, data = data[:formatLen], data[formatLen:]
-        usedSize += formatLen
-        retList = []
+        used_size = 0
+        (format_len,), data = unpack('= I', data[:4]), data[4:]
+        used_size += 4
+        fmt, data = data[:format_len], data[format_len:]
+        used_size += format_len
+        ret_list = []
 
-        for i in range(formatLen):
+        for i in range(format_len):
             if fmt[i] == 'n':
-                retList.append(None)
+                ret_list.append(None)
             elif fmt[i] == '?':
-                (retData,), data = unpack('= ?', data[:1]), data[1:]
-                usedSize += 1
-                retList.append(retData)
+                (ret_data,), data = unpack('= ?', data[:1]), data[1:]
+                used_size += 1
+                ret_list.append(ret_data)
 
             elif fmt[i] == 'q':
-                (retData,), data = unpack('= q', data[:8]), data[8:]
-                usedSize += 8
-                retList.append(retData)
+                (ret_data,), data = unpack('= q', data[:8]), data[8:]
+                used_size += 8
+                ret_list.append(ret_data)
 
             elif fmt[i] == 'd':
-                (retData,), data = unpack('= d', data[:8]), data[8:]
-                usedSize += 8
-                retList.append(retData)
+                (ret_data,), data = unpack('= d', data[:8]), data[8:]
+                used_size += 8
+                ret_list.append(ret_data)
 
             elif fmt[i] == 's':
-                (strLen,), data = unpack('= I', data[:4]), data[4:]
-                usedSize += 4
-                retList.append(data[:strLen])
-                data = data[strLen:]
-                usedSize += strLen
+                (str_len,), data = unpack('= I', data[:4]), data[4:]
+                used_size += 4
+                ret_list.append(data[:str_len])
+                data = data[str_len:]
+                used_size += str_len
 
             elif fmt[i] == 'a':
-                (retTuple, size) = Serializer._unpack(data)
-                usedSize += size
-                retList.append(list(retTuple))
+                (ret_tuple, size) = Serializer._unpack(data)
+                used_size += size
+                ret_list.append(list(ret_tuple))
 
             elif fmt[i] == 'u':
-                (retTuple, size) = Serializer._unpack(data)
-                usedSize += size
-                retList.append(retTuple)
+                (ret_tuple, size) = Serializer._unpack(data)
+                used_size += size
+                ret_list.append(ret_tuple)
 
             elif fmt[i] == 't':
-                (retTuple, size) = Serializer._unpack(data)
-                usedSize += size
-                retList.append(set(retTuple))
+                (ret_tuple, size) = Serializer._unpack(data)
+                used_size += size
+                ret_list.append(set(ret_tuple))
 
             elif fmt[i] == 'm':
-                (retTuple, size) = Serializer._unpack(data)
-                retList = list(retTuple)
-                retMap = {}
-                for i in xrange(0, len(retList), 2):
-                    retMap[retList[i]] = retList[i + 1]
-                usedSize += size
-                retList.append(retMap)
+                (ret_tuple, size) = Serializer._unpack(data)
+                ret_list = list(ret_tuple)
+                ret_map = {}
+                for j in xrange(0, len(ret_list), 2):
+                    ret_map[ret_list[i]] = ret_list[i + 1]
+                used_size += size
+                ret_list.append(ret_map)
 
             elif fmt[i] == 'o':
-                (moduleNameLen,), data = unpack('= I', data[:4]), data[4:]
-                usedSize += 4
-                moduleName, data = data[:moduleNameLen], data[moduleNameLen:]
-                usedSize += moduleNameLen
-                (classNameLen,), data = unpack('= I', data[:4]), data[4:]
-                usedSize += 4
-                className, data = data[:classNameLen], data[classNameLen:]
-                usedSize += classNameLen
+                (module_name_len,), data = unpack('= I', data[:4]), data[4:]
+                used_size += 4
+                module_name, data = data[:module_name_len], data[module_name_len:]
+                used_size += module_name_len
+                (class_name_len,), data = unpack('= I', data[:4]), data[4:]
+                used_size += 4
+                class_name, data = data[:class_name_len], data[class_name_len:]
+                used_size += class_name_len
 
-                m = importlib.import_module(moduleName)
-                c = getattr(m, className)
+                m = importlib.import_module(module_name)
+                c = getattr(m, class_name)
 
                 info = inspect.getargspec(c.__init__)
                 args = ()
-                for i in range(len(info.args) - 1 - len(info.defaults)):
+                for j in range(len(info.args) - 1 - len(info.defaults)):
                     args += (None,)
 
-                (retObject, size) = c(*args).unpack(data)
+                (ret_object, size) = c(*args).unpack(data)
                 data = data[size:]
-                usedSize += size
-                retList.append(retObject)
+                used_size += size
+                ret_list.append(ret_object)
 
             elif fmt[i] == 'c':
-                (retData,), data = unpack('= c', data[:1]), data[1:]
-                usedSize += 1
-                retList.append(retData)
+                (ret_data,), data = unpack('= c', data[:1]), data[1:]
+                used_size += 1
+                ret_list.append(ret_data)
             elif fmt[i] == 'b':
-                (retData,), data = unpack('= b', data[:1]), data[1:]
-                usedSize += 1
-                retList.append(retData)
+                (ret_data,), data = unpack('= b', data[:1]), data[1:]
+                used_size += 1
+                ret_list.append(ret_data)
             elif fmt[i] == 'B':
-                (retData,), data = unpack('= B', data[:1]), data[1:]
-                usedSize += 1
-                retList.append(retData)
+                (ret_data,), data = unpack('= B', data[:1]), data[1:]
+                used_size += 1
+                ret_list.append(ret_data)
             elif fmt[i] == 'h':
-                (retData,), data = unpack('= h', data[:2]), data[2:]
-                usedSize += 2
-                retList.append(retData)
+                (ret_data,), data = unpack('= h', data[:2]), data[2:]
+                used_size += 2
+                ret_list.append(ret_data)
             elif fmt[i] == 'H':
-                (retData,), data = unpack('= H', data[:2]), data[2:]
-                usedSize += 2
-                retList.append(retData)
+                (ret_data,), data = unpack('= H', data[:2]), data[2:]
+                used_size += 2
+                ret_list.append(ret_data)
             elif fmt[i] == 'i':
-                (retData,), data = unpack('= i', data[:4]), data[4:]
-                usedSize += 4
-                retList.append(retData)
+                (ret_data,), data = unpack('= i', data[:4]), data[4:]
+                used_size += 4
+                ret_list.append(ret_data)
             elif fmt[i] == 'I':
-                (retData,), data = unpack('= I', data[:4]), data[4:]
-                usedSize += 4
-                retList.append(retData)
+                (ret_data,), data = unpack('= I', data[:4]), data[4:]
+                used_size += 4
+                ret_list.append(ret_data)
             elif fmt[i] == 'l':
-                (retData,), data = unpack('= l', data[:4]), data[4:]
-                usedSize += 4
-                retList.append(retData)
+                (ret_data,), data = unpack('= l', data[:4]), data[4:]
+                used_size += 4
+                ret_list.append(ret_data)
             elif fmt[i] == 'L':
-                (retData,), data = unpack('= L', data[:4]), data[4:]
-                usedSize += 4
-                retList.append(retData)
+                (ret_data,), data = unpack('= L', data[:4]), data[4:]
+                used_size += 4
+                ret_list.append(ret_data)
             elif fmt[i] == 'Q':
-                (retData,), data = unpack('= Q', data[:8]), data[8:]
-                usedSize += 8
-                retList.append(retData)
+                (ret_data,), data = unpack('= Q', data[:8]), data[8:]
+                used_size += 8
+                ret_list.append(ret_data)
             elif fmt[i] == 'f':
-                (retData,), data = unpack('= f', data[:4]), data[4:]
-                usedSize += 4
-                retList.append(retData)
+                (ret_data,), data = unpack('= f', data[:4]), data[4:]
+                used_size += 4
+                ret_list.append(ret_data)
             elif fmt[i] == 'x':
                 raise Exception("x is not a supported format")
             elif fmt[i] == 'p':
                 raise Exception("p is not a supported format")
             elif fmt[i] == 'P':
                 raise Exception("P is not a supported format")
-        return (tuple(retList), usedSize)
+        return tuple(ret_list), used_size
