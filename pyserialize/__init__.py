@@ -207,7 +207,7 @@ class Serializer(object):
                 ret_list = list(ret_tuple)
                 ret_map = {}
                 for j in xrange(0, len(ret_list), 2):
-                    ret_map[ret_list[i]] = ret_list[i + 1]
+                    ret_map[ret_list[j]] = ret_list[j + 1]
                 used_size += size
                 ret_list.append(ret_map)
 
